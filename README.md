@@ -25,10 +25,10 @@ MQTT Subscriber is a lightweight implementation designed to subscribe to an MQTT
 ## Usage
 To run the MQTTSubscriber:
 ```bash
-./mqtt_subscriber <broker_url> <topic>
+./MQTTSubscriber <broker_url> <topic>
 ```
 
 Example:
 ```bash
-./mqtt_subscriber mqtt://localhost:1883 test/topic
+./MQTTSubscriber mqtt://localhost:1883 test/topic
 ```
