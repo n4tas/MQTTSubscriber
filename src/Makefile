@@ -1,6 +1,6 @@
 SRC:=$(wildcard *.c)
 
-BIN:=MQTTBroker
+BIN:=MQTTSubscriber
 OBJ:=$(SRC:.c=.o)
 LDFLAGS +=-luci -lsqlite3 -lmosquitto -lcjson -lcurl
 CFLAGS +=-Wall
