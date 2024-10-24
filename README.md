@@ -2,12 +2,17 @@
 
 MQTTSubscriber is a lightweight MQTT client designed to subscribe to MQTT topics and handle incoming messages. This project is tailored for the **OpenWrt** system running on the **RUTX10 router** by **Teltonika Networks**. It allows the user to subscribe to specified MQTT topics and trigger actions based on the incoming MQTT payloads.
 
+
 ## Table of Contents
+- [Teltonika](#teltonika)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [License](#license)
+
+## Teltonika RUTX10 Router and OpenWrt
+
+This project has been tested and optimized for use with the **Teltonika RUTX10** router running the **OpenWrt** operating system. The RUTX10 is a high-performance router designed for enterprise-grade IoT and network management applications. With MQTTSubscriber, it can easily integrate into larger IoT setups, providing a lightweight way to handle MQTT messaging.
 
 ## Requirements
 
@@ -22,6 +27,8 @@ MQTTSubscriber is a lightweight MQTT client designed to subscribe to MQTT topics
    
 2. Transfer the files to your Teltonika RUTX10 router using `scp` or any other secure file transfer method.
 
+3. ```make menuconfig```
+   
 ## Configuration
 
 Edit the `config.json` file to configure your MQTT connection details. Here's a sample configuration:
@@ -59,16 +66,4 @@ This will start the client, which will subscribe to the specified MQTT topics an
 ### Example: Subscribing to a topic and printing messages
 
 By default, the script subscribes to the topic defined in `config.json` and prints the received messages to the console.
-
-## Teltonika RUTX10 Router and OpenWrt
-
-This project has been tested and optimized for use with the **Teltonika RUTX10** router running the **OpenWrt** operating system. The RUTX10 is a high-performance router designed for enterprise-grade IoT and network management applications. With MQTTSubscriber, it can easily integrate into larger IoT setups, providing a lightweight way to handle MQTT messaging.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-Feel free to further modify the text if needed or provide additional details about your project.
 

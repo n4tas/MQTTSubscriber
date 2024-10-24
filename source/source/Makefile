@@ -1,16 +1,16 @@
-SRC:=$(wildcard src/*.c)
+SRC:=$(wildcard *.c)
 BIN:=MQTTSubscriber
 OBJ:=$(SRC:.c=.o)
-LDFLAGS +=-largp -luci -lsqlite3 -lmosquitto -lcjson -lcurl
+LDFLAGS +=-luci -lsqlite3 -lmosquitto -lcjson -lcurl
+#-largp
 CFLAGS +=-Wall
-DEBUG +=-DDEBUG
 
 .PHONY: all clean
 
 all: $(BIN)
 
 $(BIN): $(SRC)
-	$(CC) $(CFLAGS) -o $(BIN) $^ $(LDFLAGS)  #$(DEBUG)
+	$(CC) $(CFLAGS) -o $(BIN) $^ $(LDFLAGS)
 
 clean:
 	$(RM) $(OBJ) $(BIN)
