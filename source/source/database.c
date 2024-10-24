@@ -2,11 +2,6 @@
 
 sqlite3 *db = NULL;
 
-// static int callback(void *NotUsed, int argc, char **argv, char **azColName)
-// {
-//    return 0;
-// }
-
 int table_insert(char *topics, char *data)
 {  
    char *zErrMsg = 0;

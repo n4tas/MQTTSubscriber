@@ -1,33 +1,74 @@
-# MQTT Subscriber
+# MQTTSubscriber
 
-This repository contains a lightweight implementation designed to subscribe to an MQTT broker and handle messages. It's written primarily in C, with additional support from shell scripts and a Makefile for ease of building and running the project.
+MQTTSubscriber is a lightweight MQTT client designed to subscribe to MQTT topics and handle incoming messages. This project is tailored for the **OpenWrt** system running on the **RUTX10 router** by **Teltonika Networks**. It allows the user to subscribe to specified MQTT topics and trigger actions based on the incoming MQTT payloads.
 
-## Features
-- Connects to an MQTT broker
-- Subscribes to topics
-- Receives and processes messages in real-time
+## Table of Contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [License](#license)
+
+## Requirements
+
+- **OpenWrt**: The MQTTSubscriber is developed specifically for OpenWrt, a Linux-based OS designed for embedded systems. This guide assumes you are running OpenWrt on the **Teltonika RUTX10 router**.
 
 ## Installation
+
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/n4tas/MQTTSubscriber.git
-   ```
-2. Navigate into the directory:
-   ```bash
-   cd MQTTSubscriber
-   ```
-3. Compile the source code:
-   ```bash
-   make
-   ```
+    ```bash
+    git clone https://github.com/n4tas/MQTTSubscriber.git
+    ```
+   
+2. Transfer the files to your Teltonika RUTX10 router using `scp` or any other secure file transfer method.
+
+## Configuration
+
+Edit the `config.json` file to configure your MQTT connection details. Here's a sample configuration:
+
+```json
+{
+    "broker": "your_mqtt_broker_ip",
+    "port": 1883,
+    "topic": "your_mqtt_topic",
+    "username": "mqtt_username",
+    "password": "mqtt_password",
+    "client_id": "client_id_for_mqtt",
+    "qos": 1
+}
+```
+
+- **broker**: The IP address or hostname of your MQTT broker.
+- **port**: The port used by your MQTT broker (typically 1883 for non-TLS connections).
+- **topic**: The MQTT topic you wish to subscribe to.
+- **username**: The MQTT broker username.
+- **password**: The MQTT broker password.
+- **client_id**: The unique client ID for this MQTT client.
+- **qos**: The Quality of Service level for the subscription.
 
 ## Usage
-To run the MQTTSubscriber:
+
+After configuring your `config.json` file, you can run the MQTTSubscriber by executing:
+
 ```bash
-./MQTTSubscriber <broker_url> <topic>
+python3 mqtt_subscriber.py
 ```
 
-Example:
-```bash
-./MQTTSubscriber mqtt://localhost:1883 test/topic
-```
+This will start the client, which will subscribe to the specified MQTT topics and handle incoming messages. Actions based on the payload can be customized in the `mqtt_subscriber.py` file.
+
+### Example: Subscribing to a topic and printing messages
+
+By default, the script subscribes to the topic defined in `config.json` and prints the received messages to the console.
+
+## Teltonika RUTX10 Router and OpenWrt
+
+This project has been tested and optimized for use with the **Teltonika RUTX10** router running the **OpenWrt** operating system. The RUTX10 is a high-performance router designed for enterprise-grade IoT and network management applications. With MQTTSubscriber, it can easily integrate into larger IoT setups, providing a lightweight way to handle MQTT messaging.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Feel free to further modify the text if needed or provide additional details about your project.
+

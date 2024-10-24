@@ -47,7 +47,6 @@ void clean_up_libmosquitto(struct mosquitto *mosq)
     mosquitto_loop_stop(mosq, false);
     mosquitto_disconnect(mosq);
 	mosquitto_destroy(mosq);
-    // mosquitto_lib_cleanup();
 }
 
 int mosquitto_init(int argc, char **argv, struct mosquitto **mosq, struct uci_topic_data **uci_data)

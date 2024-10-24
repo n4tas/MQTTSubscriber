@@ -4,17 +4,17 @@ START=80
 STOP=85                                               
 start_service() {                                           
     local enabled                                                                                                                                                                                      
-    config_load 'mqtt'
+    config_load 'mqtt_subscriber'
     if [ "$enabled" == 1 ]; then                            
         procd_open_instance                                              
-        procd_set_param command /usr/bin/MQTTBroker -h "$1" -p "$2"
+        procd_set_param command /usr/bin/MQTTSubscriber -h "$1" -p "$2"
         procd_set_param command mosquitto_pub -h "$1" -t "name" -m "$name" -p "$2"
         procd_close_instance                   
     fi                                                                          
 }                                                  
                                                                                 
 service_triggers() {                               
-    procd_add_reload_trigger "mqtt"          
+    procd_add_reload_trigger "mqtt_subscriber"          
 }                                    
       
 reload_service() {  

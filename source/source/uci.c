@@ -223,7 +223,7 @@ int check_event_logic(struct uci_topic_data **uci_data)
     for (int i = 0; i < (*uci_data)->events_count; i++){
         if (strcmp((*uci_data)->events[i][EVENT_DATA_TYPE_INDEX], "alphanumeric") == 0) {
             if ((strcmp((*uci_data)->events[i][EVENT_COMPARISON_TYPE_INDEX], "!=") != 0) &&
-                (strcmp((*uci_data)->events[i][EVENT_COMPARISON_TYPE_INDEX], "==") != 0))
+                (strcmp((*uci_data)->events[i][EVENT_COMPARISON_TYPE_INDEX], "=") != 0))
                     return -1;
         }
         if (strcmp((*uci_data)->events[i][EVENT_DATA_TYPE_INDEX], "numeric") == 0){
@@ -249,10 +249,10 @@ void uci_event_alphanumeric(struct uci_topic_data **uci_data, int current, char 
         return;
     }
     while (1){
-        if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "==") == 0) &&
+        if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
             if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) == 0){
-                printf("mail sent: uci_event_alphanumeric == %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                printf("mail sent: uci_event_alphanumeric = %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
                 goto exit;
             }
         }
@@ -284,7 +284,7 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
         return;
     printf("valuestring %s valueint %d\n", string, valueint);
     while (1){
-        if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "==") == 0) &&
+        if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
             if (valueint == atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
                 printf("mail sent: uci_event_numeric == %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
