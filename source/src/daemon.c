@@ -42,6 +42,7 @@ int become_daemon()
     }
     return 0;
 }
+
 int daemon_initialize()
 {
     int ret;
