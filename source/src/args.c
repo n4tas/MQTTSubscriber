@@ -14,6 +14,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state) {
             break;
         case 'd':
             arguments->daemon = 1;
+            break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 1)
                 argp_usage(state);
