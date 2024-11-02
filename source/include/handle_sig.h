@@ -1,7 +1,6 @@
 #pragma once
 #ifndef SIG_H
 #define SIG_H
-
 #include "mqtt_sub.h"
 #include "database.h"
 #include <stdlib.h>
@@ -13,9 +12,9 @@
  * - mosq: the active mosquitto MQTT client instance
  * - uci_data: user configuration data associated with MQTT topics
  */
-typedef struct {
+typedef struct signal_context{
     struct mosquitto *mosq;
-    struct uci_topic_data *uci_data
+    struct uci_topic_data *uci_data;
 } signal_context_t;
 
 /**
@@ -42,5 +41,4 @@ void set_signal_context(struct mosquitto *mosq, struct uci_topic_data *uci_data)
  * - sig: The signal number received by the process.
  */
 void handle_signal(int sig);
-
 #endif

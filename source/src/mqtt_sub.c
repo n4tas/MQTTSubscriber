@@ -3,7 +3,7 @@
 void on_connect(struct mosquitto *mosq, void *userdata, int result)
 {   
     struct uci_topic_data *uci_data = userdata;
-	printf("Connected to MQTT broker\n");           
+	printf("Connected to MQTT broker\n");
     char **topics = NULL;        
     topics = (char **) malloc(sizeof(char));    
     if (topics == NULL) {

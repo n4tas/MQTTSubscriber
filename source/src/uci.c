@@ -12,17 +12,17 @@ int uci_credentials(char *username, char *password)
         return -1;
     }
     if (uci_load(ctx, "mqtt_login", &pkg) != UCI_OK) {
-        fprintf(stderr, "Failed to load UCI configuration file");
-        uci_perror(ctx, "Error");
+        fprintf(stderr, "Failed to load UCI configuration file ");
+        uci_perror(ctx, " Error");
         uci_free_context(ctx);
         return -1;
     }
     uci_foreach_element(&pkg->sections, e) {
         sec = uci_to_section(e);
-        strcpy(username, uci_lookup_option_string(ctx, sec, "username"));
+        strcpy(username, uci_lookup_option_string(ctx, sec, "email"));
         strcpy(password, uci_lookup_option_string(ctx, sec, "password"));
         if (!username || !password) {
-            printf("Username or Password not found in section: %s\n", sec->e.name);
+            printf("Email or Password not found in section: %s\n", sec->e.name);
         } 
     }
     uci_unload(ctx, pkg);
@@ -78,7 +78,7 @@ int uci_topics(char ***topics, int *total_topics_count)
     if (uci_load(ctx, "mqtt_topics", &pkg) != UCI_OK) {
         fprintf(stderr, "Failed to load UCI configuration file");
         free(*topics);
-        uci_perror(ctx, "Error");
+        uci_perror(ctx, " Error");
         uci_free_context(ctx);
         return -1;
     }
@@ -251,11 +251,11 @@ void uci_event_alphanumeric(struct uci_topic_data **uci_data, int current, char 
     while (1){
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
-            if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) == 0){
-                printf("mail sent: uci_event_alphanumeric = %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
-                goto exit;
+                if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) == 0){
+                    printf("mail sent: uci_event_alphanumeric = %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                    goto exit;
+                }
             }
-        }
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "!=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) != 0){
@@ -338,9 +338,8 @@ exit:
 int uci_event_funcionality(struct uci_topic_data **uci_data, char *payload)
 {   
     for (int i = 0; i < (*uci_data)->events_count; i++){
-        if (strcmp((*uci_data)->events[i][EVENT_DATA_TYPE_INDEX], "alphanumeric") == 0){
-            uci_event_alphanumeric(uci_data, i, payload);
-        }   
+        if (strcmp((*uci_data)->events[i][EVENT_DATA_TYPE_INDEX], "alphanumeric") == 0)
+            uci_event_alphanumeric(uci_data, i, payload); 
         if (strcmp((*uci_data)->events[i][EVENT_DATA_TYPE_INDEX], "numeric") == 0){
             uci_event_numeric(uci_data, i, payload);
         }
@@ -371,14 +370,12 @@ void uci_topics_free(char **topics, int total_topics_count)
 
 void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data)
 {   
-    if (mosq != NULL){
-        mosquitto_loop_stop(mosq, false);
+    if (mosq != NULL)
         clean_up_libmosquitto(mosq);
-    }
     if (uci_data != NULL) {
         if (uci_data->topics != NULL)
-        uci_topics_free(uci_data->topics, uci_data->topics_count);
-    if (uci_data->events != NULL)
-        uci_events_free(uci_data->events, uci_data->events_count);
+            uci_topics_free(uci_data->topics, uci_data->topics_count);
+        if (uci_data->events != NULL)
+            uci_events_free(uci_data->events, uci_data->events_count);
     }
 }

@@ -1,13 +1,12 @@
 #pragma once
 #include "handle_sig.h"
+#include "mail.h"
 #include "uci.h"
 #include "daemon.h"
 #include "args.h"
 #include "database.h"
 #include <mosquitto.h>
 #include <stdio.h>
-
-//#include <curl/curl.h>
 
 /**
  * Initializes mosquitto and connects to the MQTT broker, setting up necessary configurations.
