@@ -1,5 +1,6 @@
 #pragma once
 #include "mqtt_sub.h"
+#include <curl/curl.h>
 #include <uci.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -31,19 +32,19 @@ struct uci_topic_data {
 };
 
 /**
- * Retrieves the username and password from the UCI "mqtt_login" configuration.
+ * Retrieves the email and password from the UCI "mqtt_login" configuration.
  * 
- * The function reads the "username" and "password" values from the specified
- * UCI package, storing them in the provided `username` and `password` buffers.
+ * The function reads the "email" and "password" values from the specified
+ * UCI package, storing them in the provided `email` and `password` buffers.
  *
  * Parameters:
- * - `username`: buffer to store the retrieved username.
+ * - `email`: buffer to store the retrieved username.
  * - `password`: buffer to store the retrieved password.
  *
  * Returns:
  * - 0 on success, -1 if there was an error accessing UCI or retrieving credentials.
  */
-int uci_credentials(char *username, char *password);
+int uci_credentials(char *email, char *password);
 
 /**
  * Retrieves a list of MQTT topics from the UCI "mqtt_topics" configuration.
@@ -135,5 +136,6 @@ void event_topic_synchronization(struct uci_topic_data **uci_data);
  * Parameters:
  * - `mosq`: pointer to the MQTT client instance to clean up.
  * - `uci_data`: pointer to the UCI topic data structure to free.
+ * - `curl`: pointer to the CURL object.
  */
-void cleanup(struct mosquitto *mosq, struct uci_topic_data *uci_data);
+void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data, CURL *curl);

@@ -22,16 +22,16 @@ void on_connect(struct mosquitto *mosq, void *userdata, int result)
         mosquitto_subscribe(mosq, NULL, topics[i], 0);                                 
     char ***events = (char ***)malloc(sizeof(char));
     if (events == NULL) {
-        cleanup(NULL, uci_data);
+        cleanup(NULL, uci_data, NULL);
         return;
     }              
     if (uci_events(&events, topics, &events_count, topics_count) != 0){  
-        cleanup(NULL, uci_data);
+        cleanup(NULL, uci_data, NULL);
         return;
     }
     uci_data->events = events;
     uci_data->events_count = events_count;
-    set_signal_context(mosq, uci_data);
+    set_signal_context(mosq, uci_data, NULL);
 }
 
 void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
@@ -51,8 +51,6 @@ void clean_up_libmosquitto(struct mosquitto *mosq)
 
 int mosquitto_init(int argc, char **argv, struct mosquitto **mosq, struct uci_topic_data **uci_data)
 {   
-	char username[24];
-	char password[24];
     if (mosquitto_lib_init() != MOSQ_ERR_SUCCESS){
         fprintf(stderr, "Mosquitto library returned non-zero value");
         return -1;
@@ -62,10 +60,6 @@ int mosquitto_init(int argc, char **argv, struct mosquitto **mosq, struct uci_to
         fprintf(stderr, "Error: failed to create mosquitto client\n");
         clean_up_libmosquitto(*mosq);
         return -1;
-    }
-    if (strcmp(arguments.host, "0.0.0.0") != 0) {
-        uci_credentials(username, password);
-        mosquitto_username_pw_set(*mosq, username, password);
     }
     if (mosquitto_connect(*mosq, arguments.host, arguments.port, 5) != MOSQ_ERR_SUCCESS){
         clean_up_libmosquitto(*mosq);

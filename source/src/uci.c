@@ -1,30 +1,47 @@
 #include "../include/uci.h"
 
-int uci_credentials(char *username, char *password)
-{
+static const int size = 512;
+
+#define MAX_EMAIL_LEN 100
+#define MAX_PASSWORD_LEN 100
+
+int uci_credentials(char *email, char *password) {
     struct uci_context *ctx = NULL;
     struct uci_package *pkg = NULL;
     struct uci_section *sec = NULL;
     struct uci_element *e = NULL;
+    
     ctx = uci_alloc_context();
     if (!ctx) {
         fprintf(stderr, "Failed to allocate UCI context\n");
         return -1;
     }
+    
     if (uci_load(ctx, "mqtt_login", &pkg) != UCI_OK) {
-        fprintf(stderr, "Failed to load UCI configuration file ");
+        fprintf(stderr, "Failed to load UCI configuration file 'mqtt_login'");
         uci_perror(ctx, " Error");
         uci_free_context(ctx);
         return -1;
     }
+
     uci_foreach_element(&pkg->sections, e) {
         sec = uci_to_section(e);
-        strcpy(username, uci_lookup_option_string(ctx, sec, "email"));
-        strcpy(password, uci_lookup_option_string(ctx, sec, "password"));
-        if (!username || !password) {
-            printf("Email or Password not found in section: %s\n", sec->e.name);
-        } 
+        if (strcmp(sec->type, "login") == 0) {
+            const char *email_val = uci_lookup_option_string(ctx, sec, "email");
+            const char *password_val = uci_lookup_option_string(ctx, sec, "password");
+
+            if (email_val && password_val) {
+                strncpy(email, email_val, MAX_EMAIL_LEN - 1);
+                email[MAX_EMAIL_LEN - 1] = '\0';
+                strncpy(password, password_val, MAX_PASSWORD_LEN - 1);
+                password[MAX_PASSWORD_LEN - 1] = '\0';
+            } else {
+                syslog(LOG_ERR, "Email or Password not found in section: %s\n", sec->e.name);
+            }
+            break;
+        }
     }
+    
     uci_unload(ctx, pkg);
     uci_free_context(ctx);
     return 0;
@@ -237,29 +254,32 @@ int check_event_logic(struct uci_topic_data **uci_data)
 void uci_event_alphanumeric(struct uci_topic_data **uci_data, int current, char *payload)
 {   
     cJSON *json_payload = cJSON_Parse(payload);
-    if (json_payload == NULL){
-        fprintf(stderr, "JSON payload error\n");
+    if (json_payload == NULL)
         return;
-    }
+    char uci_string[size];
     int params = cJSON_GetArraySize(json_payload);
     char *string = json_payload->child->string;
     char *valuestring = json_payload->child->valuestring;
-    if (string == NULL || valuestring == NULL){
-        fprintf(stderr, "JSON payload error\n");
+    if (string == NULL || valuestring == NULL)
         return;
-    }
     while (1){
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) == 0){
-                    printf("mail sent: uci_event_alphanumeric = %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (=)", 
+                        (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                        (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                    send_mail(uci_string);
                     goto exit;
                 }
             }
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "!=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) != 0){
-                    printf("mail sent: uci_event_alphanumeric != %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);
+                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (!=)", 
+                        (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                        (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                    send_mail(uci_string);
                     goto exit;
                 }
         }
@@ -277,52 +297,70 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
     cJSON *json_payload = cJSON_Parse(payload);
     if (json_payload == NULL)
         return;
+    char uci_string[size];
     int params = cJSON_GetArraySize(json_payload);
     char *string = json_payload->child->string;
     int valueint = json_payload->child->valueint;
     if (string == NULL || valueint == 0)
         return;
-    printf("valuestring %s valueint %d\n", string, valueint);
     while (1){
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
             if (valueint == atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                printf("mail sent: uci_event_numeric == %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
-                    goto exit;
+                snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (=)", 
+                    (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                    (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                send_mail(uci_string);               
+                goto exit;
             }
         }
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "!=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
             if (valueint != atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                printf("mail sent: uci_event_numeric != %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (!=)", 
+                    (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                    (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                send_mail(uci_string);                  
                 goto exit;
             }
         }
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], ">") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint > atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    printf("mail sent: uci_event_numeric > %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (>)", 
+                        (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                        (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                    send_mail(uci_string);                  
                     goto exit;
                 }
         }
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "<") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint < atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    printf("mail sent: uci_event_numeric < %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (<)", 
+                        (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                        (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                    send_mail(uci_string);                  
                     goto exit;
                 }
         }
-        if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], ">=") == 0) &&
+        if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=>") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint >= atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    printf("mail sent: uci_event_numeric >= %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (=>)", 
+                        (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                        (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                    send_mail(uci_string);                  
                     goto exit;
                 }
         }
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "<=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint <= atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    printf("mail sent: uci_event_numeric <= %s\n", (*uci_data)->events[current][EVENT_REFERENCE_INDEX]);                
+                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (<=)", 
+                        (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
+                        (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
+                    send_mail(uci_string);                  
                     goto exit;
                 }
         if (param_zero(&params) == true)
@@ -368,7 +406,7 @@ void uci_topics_free(char **topics, int total_topics_count)
     free(topics);
 }
 
-void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data)
+void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data, CURL *curl)
 {   
     if (mosq != NULL)
         clean_up_libmosquitto(mosq);
@@ -378,4 +416,6 @@ void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data)
         if (uci_data->events != NULL)
             uci_events_free(uci_data->events, uci_data->events_count);
     }
+    if (curl != NULL)
+        curl_easy_cleanup(curl);
 }
