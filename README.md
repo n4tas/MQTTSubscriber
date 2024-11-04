@@ -52,8 +52,8 @@ config event
 ```config
 
 config login 
-    option username admin
-    option password admin
+    option email example@example.com
+    option password example-password
 ```
 
 ## Usage
