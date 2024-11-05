@@ -1,29 +1,21 @@
 #include "../include/uci.h"
 
-static const int size = 512;
-
-#define MAX_EMAIL_LEN 100
-#define MAX_PASSWORD_LEN 100
-
 int uci_credentials(char *email, char *password) {
     struct uci_context *ctx = NULL;
     struct uci_package *pkg = NULL;
     struct uci_section *sec = NULL;
     struct uci_element *e = NULL;
-    
     ctx = uci_alloc_context();
     if (!ctx) {
         fprintf(stderr, "Failed to allocate UCI context\n");
         return -1;
     }
-    
     if (uci_load(ctx, "mqtt_login", &pkg) != UCI_OK) {
         fprintf(stderr, "Failed to load UCI configuration file 'mqtt_login'");
         uci_perror(ctx, " Error");
         uci_free_context(ctx);
         return -1;
     }
-
     uci_foreach_element(&pkg->sections, e) {
         sec = uci_to_section(e);
         if (strcmp(sec->type, "login") == 0) {
@@ -41,7 +33,6 @@ int uci_credentials(char *email, char *password) {
             break;
         }
     }
-    
     uci_unload(ctx, pkg);
     uci_free_context(ctx);
     return 0;
@@ -256,7 +247,7 @@ void uci_event_alphanumeric(struct uci_topic_data **uci_data, int current, char 
     cJSON *json_payload = cJSON_Parse(payload);
     if (json_payload == NULL)
         return;
-    char uci_string[size];
+    char uci_string[MAX_UCI_STRING_SIZE];
     int params = cJSON_GetArraySize(json_payload);
     char *string = json_payload->child->string;
     char *valuestring = json_payload->child->valuestring;
@@ -266,7 +257,10 @@ void uci_event_alphanumeric(struct uci_topic_data **uci_data, int current, char 
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) == 0){
-                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (=)", 
+                    snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                    "Event reference:\r\n"
+                    "\"%s\"\r\n"
+                    "This corresponds to the parameter in the topic \"%s\" (=).\r\n", 
                         (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                         (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                     send_mail(uci_string);
@@ -276,7 +270,10 @@ void uci_event_alphanumeric(struct uci_topic_data **uci_data, int current, char 
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "!=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if ((strcmp(valuestring, (*uci_data)->events[current][EVENT_REFERENCE_INDEX])) != 0){
-                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (!=)", 
+                    snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                        "Event reference:\r\n"
+                        "\"%s\"\r\n"
+                        "This corresponds to the parameter in the topic \"%s\" (!=).\r\n", 
                         (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                         (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                     send_mail(uci_string);
@@ -297,7 +294,7 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
     cJSON *json_payload = cJSON_Parse(payload);
     if (json_payload == NULL)
         return;
-    char uci_string[size];
+    char uci_string[MAX_UCI_STRING_SIZE];
     int params = cJSON_GetArraySize(json_payload);
     char *string = json_payload->child->string;
     int valueint = json_payload->child->valueint;
@@ -307,17 +304,24 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
             if (valueint == atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (=)", 
+                snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                    "Event reference:\r\n"
+                    "\"%s\"\r\n"
+                    "This corresponds to the parameter in the topic \"%s\" (=).\r\n", 
                     (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                     (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                 send_mail(uci_string);               
                 goto exit;
             }
         }
+        
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "!=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
             if (valueint != atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (!=)", 
+                snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                    "Event reference:\r\n"
+                    "\"%s\"\r\n"
+                    "This corresponds to the parameter in the topic \"%s\" (!=).\r\n", 
                     (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                     (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                 send_mail(uci_string);                  
@@ -327,7 +331,10 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], ">") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint > atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (>)", 
+                    snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                        "Event reference:\r\n"
+                        "\"%s\"\r\n"
+                        "This corresponds to the parameter in the topic \"%s\" (>).\r\n", 
                         (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                         (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                     send_mail(uci_string);                  
@@ -337,7 +344,10 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "<") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint < atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (<)", 
+                    snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                        "Event reference:\r\n"
+                        "\"%s\"\r\n"
+                        "This corresponds to the parameter in the topic \"%s\" (<).\r\n", 
                         (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                         (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                     send_mail(uci_string);                  
@@ -347,7 +357,10 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "=>") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint >= atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (=>)", 
+                    snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                        "Event reference:\r\n"
+                        "\"%s\"\r\n"
+                        "This corresponds to the parameter in the topic \"%s\" (=>).\r\n", 
                         (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                         (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                     send_mail(uci_string);                  
@@ -357,7 +370,10 @@ void uci_event_numeric(struct uci_topic_data **uci_data, int current, char *payl
         if ((strcmp((*uci_data)->events[current][EVENT_COMPARISON_TYPE_INDEX], "<=") == 0) &&
             (strcmp(string, (*uci_data)->events[current][EVENT_PARAMETER_INDEX]) == 0)){
                 if (valueint <= atoi((*uci_data)->events[current][EVENT_REFERENCE_INDEX])){
-                    snprintf(uci_string, size, "Event reference \"%s\" corresponds to \"%s\" topic's parameter (<=)", 
+                    snprintf(uci_string, MAX_UCI_STRING_SIZE, 
+                        "Event reference:\r\n"
+                        "\"%s\"\r\n"
+                        "This corresponds to the parameter in the topic \"%s\" (<=).\r\n", 
                         (*uci_data)->events[current][EVENT_REFERENCE_INDEX], 
                         (*uci_data)->events[current][EVENT_TOPICS_NAME_INDEX]);
                     send_mail(uci_string);                  
@@ -390,9 +406,12 @@ void uci_events_free(char ***events, int total_events_count)
     if (events == NULL)
         return;
     for (int i = 0; i < total_events_count; i++){
-        for (int j = 0; j < 5; j++)
+        for (int j = 0; j < 5; j++){
             free(events[i][j]);
+            events[i][j] = NULL;
+        }
         free(events[i]);
+        events[i] = NULL;
     }
     free(events);
 }
@@ -401,21 +420,29 @@ void uci_topics_free(char **topics, int total_topics_count)
 {   
     if (topics == NULL || topics[0] == NULL)
         return;
-    for (int i = 0; i < total_topics_count; i++)
+    for (int i = 0; i < total_topics_count; i++){
         free(topics[i]);
+        topics[i] = NULL;
+    }
     free(topics);
 }
 
-void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data, CURL *curl)
+void cleanup(struct mosquitto *mosq, struct uci_topic_data *uci_data)
 {   
     if (mosq != NULL)
         clean_up_libmosquitto(mosq);
     if (uci_data != NULL) {
-        if (uci_data->topics != NULL)
-            uci_topics_free(uci_data->topics, uci_data->topics_count);
         if (uci_data->events != NULL)
             uci_events_free(uci_data->events, uci_data->events_count);
+        if (uci_data->topics != NULL)
+            uci_topics_free(uci_data->topics, uci_data->topics_count);
     }
-    if (curl != NULL)
+    if (recipients != NULL) {
+        curl_slist_free_all(recipients);
+        recipients = NULL;
+    }
+    if (curl != NULL) {  
         curl_easy_cleanup(curl);
+        curl = NULL;
+    }
 }

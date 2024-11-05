@@ -13,12 +13,9 @@ int main(int argc, char **argv){
     load_arguments(argc, argv);
     struct mosquitto *mosq = NULL;
     struct uci_topic_data *uci_data = NULL;
-    CURL *curl = NULL;
     if (mosquitto_init(argc, argv, &mosq, &uci_data) != 0)
         return -1;
-    set_signal_context(mosq, uci_data, curl);
-    cleanup(mosq, uci_data, curl);
-    
+    cleanup(mosq, uci_data);
     return 0;
 }
 

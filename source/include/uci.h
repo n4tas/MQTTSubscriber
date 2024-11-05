@@ -14,6 +14,9 @@
 #define EVENT_DATA_TYPE_INDEX 2
 #define EVENT_COMPARISON_TYPE_INDEX 3
 #define EVENT_REFERENCE_INDEX 4
+#define MAX_UCI_STRING_SIZE 512
+#define MAX_EMAIL_LEN 64
+#define MAX_PASSWORD_LEN 64
 
 /**
  * Structure to store UCI topic data.
@@ -136,6 +139,5 @@ void event_topic_synchronization(struct uci_topic_data **uci_data);
  * Parameters:
  * - `mosq`: pointer to the MQTT client instance to clean up.
  * - `uci_data`: pointer to the UCI topic data structure to free.
- * - `curl`: pointer to the CURL object.
  */
-void cleanup(struct mosquitto* mosq, struct uci_topic_data *uci_data, CURL *curl);
+void cleanup(struct mosquitto *mosq, struct uci_topic_data *uci_data);

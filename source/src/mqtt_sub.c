@@ -3,7 +3,6 @@
 void on_connect(struct mosquitto *mosq, void *userdata, int result)
 {   
     struct uci_topic_data *uci_data = userdata;
-	printf("Connected to MQTT broker\n");
     char **topics = NULL;        
     topics = (char **) malloc(sizeof(char));    
     if (topics == NULL) {
@@ -21,17 +20,13 @@ void on_connect(struct mosquitto *mosq, void *userdata, int result)
     for (int i = 0; i < topics_count; i++)              
         mosquitto_subscribe(mosq, NULL, topics[i], 0);                                 
     char ***events = (char ***)malloc(sizeof(char));
-    if (events == NULL) {
-        cleanup(NULL, uci_data, NULL);
+    if (events == NULL || uci_events(&events, topics, &events_count, topics_count) != 0) {
+        cleanup(mosq, uci_data);
         return;
     }              
-    if (uci_events(&events, topics, &events_count, topics_count) != 0){  
-        cleanup(NULL, uci_data, NULL);
-        return;
-    }
     uci_data->events = events;
     uci_data->events_count = events_count;
-    set_signal_context(mosq, uci_data, NULL);
+    set_signal_context(mosq, uci_data);
 }
 
 void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
@@ -40,13 +35,6 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
     if (table_insert(message->topic, (char *)message->payload) != 0)
         fprintf(stderr, "Table insertion failed ");
     uci_event_funcionality(&uci_data, (char *)message->payload);             
-}
-
-void clean_up_libmosquitto(struct mosquitto *mosq)
-{   
-    mosquitto_loop_stop(mosq, false);
-    mosquitto_disconnect(mosq);
-	mosquitto_destroy(mosq);
 }
 
 int mosquitto_init(int argc, char **argv, struct mosquitto **mosq, struct uci_topic_data **uci_data)
@@ -65,8 +53,16 @@ int mosquitto_init(int argc, char **argv, struct mosquitto **mosq, struct uci_to
         clean_up_libmosquitto(*mosq);
         return -1;
     }
+    printf("Connected to MQTT broker\n");
     mosquitto_connect_callback_set(*mosq, on_connect);
     mosquitto_loop_start(*mosq);
     mosquitto_message_callback_set(*mosq, on_message);
     return 0;
 }                              
+
+void clean_up_libmosquitto(struct mosquitto *mosq)
+{   
+    mosquitto_loop_stop(mosq, false);
+    mosquitto_disconnect(mosq);
+	mosquitto_destroy(mosq);
+}

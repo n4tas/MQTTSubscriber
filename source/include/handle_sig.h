@@ -16,7 +16,6 @@
 typedef struct signal_context{
     struct mosquitto *mosq;
     struct uci_topic_data *uci_data;
-    CURL *curl;
 } signal_context_t;
 
 /**
@@ -34,7 +33,7 @@ signal_context_t* get_signal_context();
  * - mosq: Pointer to the Mosquitto client instance.
  * - uci_data: Pointer to the topic configuration data.
  */
-void set_signal_context(struct mosquitto *mosq, struct uci_topic_data *uci_data, CURL *curl);
+void set_signal_context(struct mosquitto *mosq, struct uci_topic_data *uci_data);
 
 /**
  * Signal handler function to respond to received signals (e.g., SIGINT).
