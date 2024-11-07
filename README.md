@@ -1,6 +1,6 @@
 # MQTTSubscriber
 
-MQTTSubscriber is a lightweight MQTT client designed to subscribe to MQTT topics and handle incoming messages. This project is tailored for the **OpenWrt** system running on the **RUTX10 router** by **Teltonika Networks**. It allows the user to subscribe to specified MQTT topics and trigger actions based on the incoming MQTT payloads.
+MQTTSubscriber is a lightweight MQTT client designed to subscribe to MQTT topics and handle incoming messages. This project is tailored for the **OpenWrt** system. It allows the user to subscribe to specified MQTT topics and trigger actions based on the incoming MQTT payloads.
 
 ## Table of Contents
 - [Requirements](#requirements)
@@ -10,7 +10,7 @@ MQTTSubscriber is a lightweight MQTT client designed to subscribe to MQTT topics
 
 ## Requirements
 
-- **OpenWrt**: The MQTTSubscriber is developed specifically for OpenWrt, a Linux-based OS designed for embedded systems. This guide assumes you are running OpenWrt on the **Teltonika RUTX10 router**.
+- **OpenWrt**: The MQTTSubscriber is developed specifically for OpenWrt, a Linux-based OS designed for embedded systems.
 
 ## Installation
 
